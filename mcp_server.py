@@ -11,9 +11,14 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import BaseModel, Field
 
-# isignal_db.py 로드
-from isignal_db import get_db_connection
+from typing import Annotated
+
+# isignal_db 로드 및 초기화
+from isignal_db import get_db_connection, init_db
 from prompts import SAFE_FILTER_PROMPT, SOS_DETECTION_PROMPT, SYSTEM_INSTRUCTION
+
+# DB 초기화 (서버 구동 시 무조건 실행)
+init_db()
 
 # MCP 서버 인스턴스 생성
 mcp = FastMCP(
@@ -87,9 +92,9 @@ def mock_llm_generate_reply(message: str, is_safe: bool, sos_level: int) -> str:
     }
 )
 def RegisterStudent(
-    name: str, 
-    age: int, 
-    interests: str = "[]"
+    name: Annotated[str, Field(description="등록할 자녀(학생)의 이름")], 
+    age: Annotated[int, Field(description="등록할 자녀(학생)의 나이")], 
+    interests: Annotated[str, Field(description="자녀의 관심사 목록 (예: '게임, 독서' 등)")] = "[]"
 ) -> str:
     """학부모가 자녀(학생)의 정보를 iSignal 시스템에 초기 등록합니다."""
     # 서버 내부에서 고유 ID 자동 발급
@@ -124,7 +129,10 @@ def RegisterStudent(
         "openWorldHint": True
     }
 )
-def ChatWithAI(student_id: str, message: str) -> str:
+def ChatWithAI(
+    student_id: Annotated[str, Field(description="채팅을 보내는 학생의 고유 ID")], 
+    message: Annotated[str, Field(description="학생이 입력한 메시지 원문")]
+) -> str:
     """아이의 메시지를 수신하고, 필터/SOS 검사를 거친 후 AI 응답을 반환합니다."""
     # 1. 필터 통과 검사 (Safe Filter)
     filter_result = mock_llm_filter(message)
@@ -188,7 +196,10 @@ def ChatWithAI(student_id: str, message: str) -> str:
         "openWorldHint": True
     }
 )
-def GetMonthlyReport(student_id: str, report_month: str) -> str:
+def GetMonthlyReport(
+    student_id: Annotated[str, Field(description="리포트를 발급할 학생의 고유 ID")], 
+    report_month: Annotated[str, Field(description="리포트 발행 월 (예: '2026-07')")]
+) -> str:
     """월간 종합 심리/적성 분석 리포트를 생성하여 반환합니다."""
     # 실제로는 트랙 B(배치) 엔진이 누적된 chat_logs를 바탕으로 심리 분석을 돌려야 합니다.
     # 여기서는 목업 데이터를 반환합니다.
