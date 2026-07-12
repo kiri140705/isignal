@@ -74,7 +74,17 @@ def mock_llm_generate_reply(message: str, is_safe: bool, sos_level: int) -> str:
 # MCP Tools
 # ------------------------------------------------------------------------------
 
-@mcp.tool()
+@mcp.tool(
+    name="RegisterStudent",
+    description="학부모가 자녀(학생)의 정보를 iSignal 시스템에 초기 등록합니다.",
+    annotations={
+        "title": "iSignal 학생 정보 등록",
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": True
+    }
+)
 def RegisterStudent(
     student_id: str, 
     parent_id: str, 
@@ -97,7 +107,17 @@ def RegisterStudent(
     finally:
         conn.close()
 
-@mcp.tool()
+@mcp.tool(
+    name="ChatWithAI",
+    description="아이의 메시지를 수신하고, 필터/SOS 검사를 거친 후 AI 응답을 반환합니다.",
+    annotations={
+        "title": "iSignal AI 친구 대화",
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": True
+    }
+)
 def ChatWithAI(student_id: str, message: str) -> str:
     """아이의 메시지를 수신하고, 필터/SOS 검사를 거친 후 AI 응답을 반환합니다."""
     # 1. 필터 통과 검사 (Safe Filter)
@@ -151,7 +171,17 @@ def ChatWithAI(student_id: str, message: str) -> str:
         "sos_level": sos_level
     }, ensure_ascii=False)
 
-@mcp.tool()
+@mcp.tool(
+    name="GetMonthlyReport",
+    description="월간 종합 심리/적성 분석 리포트를 생성하여 반환합니다.",
+    annotations={
+        "title": "iSignal 월간 분석 리포트",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": True
+    }
+)
 def GetMonthlyReport(student_id: str, report_month: str) -> str:
     """월간 종합 심리/적성 분석 리포트를 생성하여 반환합니다."""
     # 실제로는 트랙 B(배치) 엔진이 누적된 chat_logs를 바탕으로 심리 분석을 돌려야 합니다.
