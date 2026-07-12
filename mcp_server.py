@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+import uuid
 from datetime import datetime
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
@@ -76,23 +77,25 @@ def mock_llm_generate_reply(message: str, is_safe: bool, sos_level: int) -> str:
 
 @mcp.tool(
     name="RegisterStudent",
-    description="학부모가 자녀(학생)의 정보를 iSignal 시스템에 초기 등록합니다.",
+    description="학부모가 자녀(학생)의 이름과 나이를 입력하면 iSignal 시스템에 초기 등록하고 고유 ID를 발급해줍니다.",
     annotations={
         "title": "iSignal 학생 정보 등록",
         "readOnlyHint": False,
         "destructiveHint": False,
-        "idempotentHint": True,
+        "idempotentHint": False,
         "openWorldHint": True
     }
 )
 def RegisterStudent(
-    student_id: str, 
-    parent_id: str, 
     name: str, 
     age: int, 
     interests: str = "[]"
 ) -> str:
     """학부모가 자녀(학생)의 정보를 iSignal 시스템에 초기 등록합니다."""
+    # 서버 내부에서 고유 ID 자동 발급
+    student_id = f"stu_{uuid.uuid4().hex[:6]}"
+    parent_id = f"par_{uuid.uuid4().hex[:6]}"
+    
     conn = get_db_connection()
     c = conn.cursor()
     try:
@@ -101,9 +104,12 @@ def RegisterStudent(
             (student_id, parent_id, name, age, interests)
         )
         conn.commit()
-        return json.dumps({"status": "success", "message": f"{name} 학생 정보가 성공적으로 등록되었습니다."})
+        return json.dumps({
+            "status": "success", 
+            "message": f"✅ {name} 학생의 등록이 완료되었습니다!\n\n발급된 정보는 다음과 같습니다:\n- 학생 ID: {student_id}\n- 학부모 ID: {parent_id}\n\n이 ID들을 잘 보관해주세요!"
+        }, ensure_ascii=False)
     except sqlite3.IntegrityError:
-        return json.dumps({"status": "error", "message": "이미 등록된 학생 ID입니다."})
+        return json.dumps({"status": "error", "message": "등록 중 오류가 발생했습니다. 다시 시도해주세요."}, ensure_ascii=False)
     finally:
         conn.close()
 
