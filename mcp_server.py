@@ -2,7 +2,12 @@ import os
 import json
 import sqlite3
 from datetime import datetime
+import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.routing import Route
+from starlette.responses import JSONResponse
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import BaseModel, Field
 
 # isignal_db.py 로드
@@ -10,7 +15,11 @@ from isignal_db import get_db_connection
 from prompts import SAFE_FILTER_PROMPT, SOS_DETECTION_PROMPT, SYSTEM_INSTRUCTION
 
 # MCP 서버 인스턴스 생성
-mcp = FastMCP("iSignal")
+mcp = FastMCP(
+    "isignal",
+    stateless_http=True,
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False)
+)
 
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -160,6 +169,21 @@ def GetMonthlyReport(student_id: str, report_month: str) -> str:
 '''
     return json.dumps({"status": "success", "report": report}, ensure_ascii=False)
 
+app = mcp.streamable_http_app()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+async def health_check(request):
+    return JSONResponse({"status": "ok"})
+
+app.routes.append(Route("/", endpoint=health_check, methods=["GET"]))
+
 if __name__ == "__main__":
-    print("🚀 iSignal MCP 서버를 시작합니다...")
-    mcp.run(transport='stdio')
+    print("🚀 iSignal MCP 서버를 시작합니다 (PlayMCP 연동용 HTTP 모드)...")
+    uvicorn.run(app, host="0.0.0.0", port=8080)
