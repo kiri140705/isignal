@@ -95,7 +95,7 @@ def mock_llm_generate_reply(message: str, is_safe: bool, sos_level: int) -> str:
 
 @mcp.tool(
     name="RegisterStudent",
-    description="학부모가 자녀(학생)의 이름과 나이를 입력하면 iSignal 시스템에 초기 등록하고 고유 ID를 발급해줍니다.",
+    description="(isignal) 학부모가 자녀(학생)의 이름과 나이를 입력하면 iSignal 시스템에 초기 등록하고 고유 ID를 발급해줍니다.",
     annotations={
         "title": "iSignal 학생 정보 등록",
         "readOnlyHint": False,
@@ -133,7 +133,7 @@ def RegisterStudent(
 
 @mcp.tool(
     name="ChatWithAI",
-    description="아이의 메시지를 수신하고, 필터/SOS 검사를 거친 후 AI 응답을 반환합니다.",
+    description="(isignal) 아이의 메시지를 수신하고, 필터/SOS 검사를 거친 후 AI 응답을 반환합니다.",
     annotations={
         "title": "iSignal AI 친구 대화",
         "readOnlyHint": False,
@@ -200,7 +200,7 @@ def ChatWithAI(
 
 @mcp.tool(
     name="GetMonthlyReport",
-    description="월간 종합 심리/적성 분석 리포트를 생성하여 반환합니다.",
+    description="(isignal) 월간 종합 심리/적성 분석 리포트를 생성하여 반환합니다.",
     annotations={
         "title": "iSignal 월간 분석 리포트",
         "readOnlyHint": True,
@@ -343,7 +343,7 @@ def GetMonthlyReport(
 
 @mcp.tool(
     name="GetWeeklyEmotionTrend",
-    description="최근 7일(월~일) 동안 아이의 대화 내용을 바탕으로 요일별 감정 점수와 주간 감정 트렌드 분석 결과를 반환합니다.",
+    description="(isignal) 최근 7일(월~일) 동안 아이의 대화 내용을 바탕으로 요일별 감정 점수와 주간 감정 트렌드 분석 결과를 반환합니다.",
     annotations={
         "title": "iSignal 주간 감정 트렌드 분석",
         "readOnlyHint": True,
